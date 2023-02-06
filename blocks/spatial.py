@@ -23,6 +23,13 @@ class ConvolutionDownscale(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+class ConvolutionUpscale(nn.Module):
+    def __init__(self, in_dim, out_dim):
+        super().__init__()
+        self.model = nn.ConvTranspose2d(in_channels=in_dim, out_channels=out_dim, kernel_size=2, stride=2, padding=0, bias=False)
+    def forward(self, x):
+        return self.model(x)
+
 class LanczosUpscale(nn.Module):
     def __init__(self, in_dim, out_dim):
         super(LanczosUpscale, self).__init__()

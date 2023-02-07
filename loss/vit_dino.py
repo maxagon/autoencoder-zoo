@@ -12,7 +12,7 @@ class VitDino(nn.Module):
         # original repo https://github.com/facebookresearch/dino
         # uses .ToTensor() and .Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225) transform
         # forward call expect image in [-1.0, 1.0] range
-        # normalize input image from range Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)) to range Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
+        # normalize input image from range Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)) to range Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
         mean_expected = np.array([0.485, 0.456, 0.406])
         std_expected = np.array([0.229, 0.224, 0.225])
         mean = 2.0 * mean_expected - 1.0

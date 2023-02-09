@@ -3,24 +3,31 @@ import random
 import torch
 from einops import rearrange
 
-def rand_spatial_seed():
-    return {
-        "flipX" : random.random() < 0.37,
-        "flipY" : random.random() < 0.37,
-        "reverseXY" : random.random() < 0.37
-    }
+def rand_spatial_seed(batch_size = 1):
+    result = []
+    for i in range(batch_size):
+        result.append({
+            "flipX" : random.random() < 0.37,
+            "flipY" : random.random() < 0.37,
+            "reverseXY" : random.random() < 0.37
+        })
+    return result
 
 def rand_spatial_apply(tensor : torch.Tensor, seed = None):
+    b, _, _, _ = tensor.shape
     if seed == None:
-        seed = rand_spatial_seed()
-    out_t = tensor
-    if seed["flipX"]:
-        out_t = torch.flip(out_t, [2])
-    if seed["flipY"]:
-        out_t = torch.flip(out_t, [3])
-    if seed["reverseXY"]:
-        out_t = rearrange(out_t, "b c x y -> b c y x")
-    return out_t
+        seed = rand_spatial_seed(batch_size=b)
+    result = []
+    for i in range(b):
+        out_t = tensor[i].unsqueeze(0)
+        if seed[i]["flipX"]:
+            out_t = torch.flip(out_t, [2])
+        if seed[i]["flipY"]:
+            out_t = torch.flip(out_t, [3])
+        if seed[i]["reverseXY"]:
+            out_t = rearrange(out_t, "b c x y -> b c y x")
+        result.append(out_t)
+    return torch.cat(result, dim=0)
 
 @torch.no_grad()
 def channelwise_noise_like(tensor : torch.Tensor):

@@ -1,14 +1,20 @@
-import torch
-import torch.nn as nn
-from einops import rearrange
+from enum import Enum
 
-from filters import LanczosSampler2D
+import torch.nn as nn
+
+from blocks.filters import LanczosSampler2D
+
+class InterpolationMode(Enum):
+    Nearest = "nearest",
+    Linear = "linear",
+    Bilinear = "bilinear"
 
 class Upscale(nn.Module):
-    def __init__(self):
+    def __init__(self, mode : InterpolationMode = InterpolationMode.Nearest):
         super().__init__()
+        self.mode = mode.value
     def forward(self, x):
-        return nn.functional.interpolate(x, scale_factor=2.0, mode="nearest")
+        return nn.functional.interpolate(x, scale_factor = 2.0, mode = self.mode)
 
 class Downscale(nn.Module):
     def __init__(self):
@@ -34,7 +40,7 @@ class LanczosUpscale(nn.Module):
     def __init__(self, in_dim, out_dim):
         super().__init__()
         model = []
-        model.append(LanczosSampler2D(in_dim))
+        model.append(LanczosSampler2D())
         if in_dim != out_dim:
             model.append(nn.Conv2d(in_channels=in_dim, out_channels=out_dim, kernel_size=1, stride=1, padding=0, bias=False))
         self.model = nn.Sequential(*model)

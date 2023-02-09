@@ -21,10 +21,7 @@ class InitParams():
         self.scale = scale
 
 @torch.no_grad()
-def variance_scaling_init(
-    tensor : torch.Tensor,
-    init_params : InitParams
-):
+def variance_scaling_init(tensor : torch.Tensor, init_params : InitParams):
     fan_in, fan_out = nn.init._calculate_fan_in_and_fan_out(tensor)
     scale = init_params.scale
 

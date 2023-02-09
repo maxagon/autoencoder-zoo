@@ -1,13 +1,12 @@
 from typing import Optional
 
-import torch
 import torch.nn as nn
 
-import init
+import blocks.init as init
+import blocks.nonlinear as nl
 
 class Linear(nn.Module):
-    DEFAULT_INIT = init.InitParams()
-    def __init__(self, in_dim, out_dim, bias=True, dropout=0.0, init_params : Optional[init.InitParams] = None):
+    def __init__(self, in_dim, out_dim, bias=True, dropout=0.0, nonlinearity : Optional[nl.Nonlinearity] = None, init_params : Optional[init.InitParams] = None):
         super().__init__()
 
         # dropout
@@ -15,23 +14,32 @@ class Linear(nn.Module):
         if dropout != 0.0:
             self.dropout = nn.Dropout2d(dropout)
 
-        self.layer = nn.Linear(in_features=in_dim, out_features=out_dim, bias=bias)
+        model = [nn.Linear(in_features=in_dim, out_features=out_dim, bias=bias)]
 
         # init
         if bias:
-            nn.init.zeros_(self.layer.bias)
+            nn.init.zeros_(model[-1].bias)
         if init_params == None:
-            init_params = Linear.DEFAULT_INIT
-        self.layer.weight = init_params
+            init_params = init.InitParams()
+            if nonlinearity != None:
+                init_params.gain = nonlinearity.calc_gain()
+        init.variance_scaling_init(model[-1].weight, init_params)
+
+        # nonlinearity
+        if nonlinearity != None:
+            model += [nonlinearity]
+
+        self.model = nn.Sequential(*model)
 
     def forward(self, x):
         out = x
         if self.dropout != None:
             out = self.dropout(out)
-        out = self.layer(out)
+        out = self.model(out)
 
 class Conv2DBlock(nn.Module):
-    def __init__(self, in_dim, out_dim, kernel_rad, pad_type='none', norm='none', nonlinearity='none', bias=False, dropout=0.0, stride=1, img_size=None, init_params : Optional[init.InitParams] = None):
+    def __init__(self, in_dim, out_dim, kernel_rad, pad_type='none', bias=True, dropout=0.0, stride=1, 
+        nonlinearity : Optional[nl.Nonlinearity] = None, init_params : Optional[init.InitParams] = None):
         super().__init__()
 
         # dropout
@@ -42,8 +50,6 @@ class Conv2DBlock(nn.Module):
         model = []
 
         # pad
-        if (norm != 'none'):
-            assert(not bias)
         if pad_type == 'replicate':
             model += [nn.ReplicationPad2d(kernel_rad)]
         elif pad_type == 'reflect':
@@ -59,10 +65,16 @@ class Conv2DBlock(nn.Module):
 
         # init
         if bias:
-            nn.init.zeros_(self.model[-1].bias)
+            nn.init.zeros_(model[-1].bias)
         if init_params == None:
             init_params = init.InitParams()
-            model[-1].weight = init_params
+            if nonlinearity != None:
+                init_params.gain = nonlinearity.calc_gain()
+        init.variance_scaling_init(model[-1].weight, init_params)
+
+        # nonlinearity
+        if nonlinearity != None:
+            model += [nonlinearity]
 
         self.model = nn.Sequential(*model)
 

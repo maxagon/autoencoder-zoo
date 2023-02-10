@@ -12,6 +12,7 @@ import blocks.unet as UNet
 def ImgDimReduceMini_360k(img_size=256):
     return ImgDimReduceMini(
         in_out_dim=3,
+        ae_lat_dim=8,
         ae_depth=[1, 1, 2],
         ae_dim=[16, 32, 48],
         unet_depth=[1, 1, 1],
@@ -41,7 +42,7 @@ class FactoryAE(UNet.UNetFactory):
     def make_upscale(self, img_size, in_dim, out_dim):
         return spatial.ConvolutionUpscale(in_dim, out_dim)
 
-    def make_weighted_res_stack(self, img_size, dim, n_layers):
+    def make_feedforward(self, img_size, dim, n_layers):
         return SimpleResBlock(dim=dim, n_layers=n_layers)
 
     def make_dim_convert(self, img_size, in_dim, out_dim):

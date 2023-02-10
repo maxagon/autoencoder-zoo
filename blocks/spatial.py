@@ -3,6 +3,7 @@ from enum import Enum
 import torch.nn as nn
 
 from blocks.filters import LanczosSampler2D
+import blocks.init as init
 
 class InterpolationMode(Enum):
     Nearest = "nearest",
@@ -26,6 +27,7 @@ class ConvolutionDownscale(nn.Module):
     def __init__(self, in_dim, out_dim):
         super().__init__()
         self.model = nn.Conv2d(in_channels=in_dim, out_channels=out_dim, kernel_size=2, stride=2, padding=0, bias=False)
+        init.variance_scaling_init(self.model.weight, init_params=init.InitParams(mode=init.InitMode.FanOut))
     def forward(self, x):
         return self.model(x)
 
@@ -33,6 +35,7 @@ class ConvolutionUpscale(nn.Module):
     def __init__(self, in_dim, out_dim):
         super().__init__()
         self.model = nn.ConvTranspose2d(in_channels=in_dim, out_channels=out_dim, kernel_size=2, stride=2, padding=0, bias=False)
+        init.variance_scaling_init(self.model.weight, init_params=init.InitParams(mode=init.InitMode.FanAvr, distribution=init.InitDisribution.Uniform, gain=1.0, scale=1.0))
     def forward(self, x):
         return self.model(x)
 

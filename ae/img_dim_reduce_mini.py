@@ -19,7 +19,7 @@ def ImgDimReduceMini_360k(img_size=256, pretrained=True):
         unet_dim=[16, 32, 48],
         img_size=img_size)
     if pretrained:
-        model.load_state_dict(torch.load("weights/ImgDimReduceMini_360k_laion_aestheticsv2_6.5.bin"))
+        model.load_state_dict(torch.load("pretrained/ImgDimReduceMini_360k_laion_aestheticsv2_6.5.bin"))
     return model
 
 class SimpleResBlock(nn.Module):

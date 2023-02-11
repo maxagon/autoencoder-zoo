@@ -9,8 +9,8 @@ import blocks.nonlinear as nl
 import ae_base as ae
 import blocks.unet as UNet
 
-def ImgDimReduceMini_360k(img_size=256):
-    return ImgDimReduceMini(
+def ImgDimReduceMini_360k(img_size=256, pretrained=True):
+    model = ImgDimReduceMini(
         in_out_dim=3,
         ae_lat_dim=8,
         ae_depth=[1, 1, 2],
@@ -18,6 +18,9 @@ def ImgDimReduceMini_360k(img_size=256):
         unet_depth=[1, 1, 1],
         unet_dim=[16, 32, 48],
         img_size=img_size)
+    if pretrained:
+        model.load_state_dict(torch.load("weights/ImgDimReduceMini_360k_laion_aestheticsv2_6.5.bin"))
+    return model
 
 class SimpleResBlock(nn.Module):
     def __init__(self, dim, n_layers):

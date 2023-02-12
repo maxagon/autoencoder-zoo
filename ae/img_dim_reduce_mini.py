@@ -44,7 +44,8 @@ class FactoryAE(UNet.UNetFactory):
     def make_upscale(self, in_dim, out_dim):
         return spatial.ConvolutionUpscale(in_dim, out_dim)
 
-    def make_feedforward(self, dim, n_layers):
+    def make_feedforward(self, dim, n_layers, heads):
+        assert(heads == 0)
         return SimpleResBlock(dim=dim, n_layers=n_layers)
 
     def make_dim_convert(self, in_dim, out_dim):
@@ -60,7 +61,8 @@ class FactoryUNet(UNet.UNetFactory):
     def make_upscale(self, in_dim, out_dim):
         return spatial.LanczosUpscale(in_dim, out_dim)
 
-    def make_feedforward(self, dim, n_layers):
+    def make_feedforward(self, dim, n_layers, heads):
+        assert(heads == 0)
         modules = []
         for i in range(n_layers):
             modules.append(ff.Conv2DBlock(in_dim=dim, out_dim=dim, kernel_rad=1, pad_type='zero', bias=True, nonlinearity=nl.ReLU()))
@@ -70,7 +72,7 @@ class FactoryUNet(UNet.UNetFactory):
         return ff.Conv2DBlock(in_dim=in_dim, out_dim=out_dim, kernel_rad=0, bias=False)
 
 class ImgDimReduceMini(ae.AEBase):
-    def __init__(self, in_out_dim, ae_depth, ae_dim, ae_lat_dim, unet_depth, unet_dim, img_size):
+    def __init__(self, in_out_dim, ae_depth, ae_dim, ae_lat_dim, unet_depth, unet_dim):
         super().__init__()
 
         r_ae_depth = list(reversed(ae_depth))

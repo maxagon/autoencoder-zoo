@@ -55,3 +55,31 @@ class LanczosSampler2D(nn.Module):
         out = nn.functional.conv2d(out, self.filters)
         out = rearrange(out, '(b c) (nx ny) x y -> b c (x nx) (y ny)', nx=2, ny=2, b=bs)
         return out
+
+class LinearFilter2D(nn.Module):
+    def __init__(self, filter, normalize=True):
+        super().__init__()
+        self.size = len(filter)
+        kernel = torch.zeros(size=[1, 1, self.size, self.size])
+        sum = 0.0
+        for x in range(self.size):
+            for y in range(self.size):
+                weight = filter[x] * filter[y]
+                kernel[0][0][x][y] = weight
+                sum += weight
+        if normalize:
+            assert(sum != 0)
+            for x in range(self.size):
+                for y in range(self.size):
+                    kernel[0][0][x][y] = kernel[0][0][x][y] / sum
+        self.register_buffer("kernel", kernel)
+        self.pad = nn.ReflectionPad2d(self.size // 2)
+
+    def forward(self, x):
+        out = x
+        bs = out.shape[0]
+        out = rearrange(out, 'b c x y -> (b c) x y')
+        out = self.pad(out)
+        out = torch.nn.functional.conv2d(out, self.kernel)
+        out = rearrange(out, '(b c) x y -> b c x y', b=bs)
+        return out

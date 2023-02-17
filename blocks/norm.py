@@ -26,9 +26,11 @@ class ModLayerNorm(nn.Module):
         self.affine_mod = affine_mod
         self.eps = eps
         self.ampl = amplitude_mod
+        self.num_features = num_features
 
     def forward(self, x, emb=None):
-        _,_,h,w = x.size()
+        _,c,h,w = x.size()
+        assert c == self.num_features, "Input tensor features: {} expected features: {}".format(str(c), str(self.num_features))
         x = rearrange(x, 'b c h w -> b c (h w)')
         mean = x.mean(-1, keepdim=True)
         var = x.var(-1, keepdim=True)

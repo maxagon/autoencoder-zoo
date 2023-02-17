@@ -29,6 +29,19 @@ def rand_spatial_apply(tensor : torch.Tensor, seed = None):
         result.append(out_t)
     return torch.cat(result, dim=0)
 
+def zero_rand_element(arr):
+    indexes = []
+    for i in range(len(arr)):
+        if arr[i] != None:
+            indexes.append(i)
+    assert(len(indexes) >= 1)
+    b, _, _, _ = arr[indexes[0]].shape
+    for i in range(b):
+        rand = random.randint(0, len(indexes))
+        if rand != len(indexes):
+            arr[indexes[rand]][i] = arr[indexes[rand]][i] * 0.0
+    return arr
+
 @torch.no_grad()
 def channelwise_noise_like(tensor : torch.Tensor):
     b, s, _, _ = tensor.shape

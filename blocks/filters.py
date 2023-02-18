@@ -78,8 +78,10 @@ class LinearFilter2D(nn.Module):
     def forward(self, x):
         out = x
         bs = out.shape[0]
-        out = rearrange(out, 'b c x y -> (b c) x y')
         out = self.pad(out)
+        out = rearrange(out, 'b c x y -> (b c) x y')
+        out = torch.unsqueeze(out, dim=1)
         out = torch.nn.functional.conv2d(out, self.kernel)
+        out = torch.squeeze(out, dim=1)
         out = rearrange(out, '(b c) x y -> b c x y', b=bs)
         return out

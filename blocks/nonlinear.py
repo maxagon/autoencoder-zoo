@@ -22,3 +22,13 @@ class ReLU(Nonlinearity):
 
     def calc_gain(self):
         return nn.init.calculate_gain("relu")
+
+class SiLU(Nonlinearity):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        return nn.functional.selu(x, inplace=False)
+
+    def calc_gain(self):
+        return nn.init.calculate_gain("selu")

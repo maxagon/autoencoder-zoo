@@ -44,6 +44,6 @@ class AEBase(nn.Module):
 
     def forward(self, input):
         out = input
-        out = self.encode(input)
-        out = self.decode(input)
+        out = self.encode(out)
+        out = self.decode(out)
         return out

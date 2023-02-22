@@ -31,7 +31,7 @@ class UNetFactory():
         assert(len(dims) == len(depth))
         cur_dim = dims[0]
         if depth[0] != 0:
-            modules.append(self.make_feedforward(dim=dims[0], n_layers=depth[0], heads=heads[i]))
+            modules.append(self.make_feedforward(dim=dims[0], n_layers=depth[0], heads=heads[0]))
         for i in range(1, len(dims)):
             next_dim = dims[i]
             blocks = []

@@ -43,7 +43,7 @@ class Linear(nn.Module):
 
 class Conv2DBlock(nn.Module):
     def __init__(self, in_dim, out_dim, kernel_rad, pad_type='none', bias=True, dropout=0.0, stride=1, 
-        nonlinearity : Optional[nl.Nonlinearity] = None, init_params : Optional[init.InitParams] = None):
+        nonlinearity : Optional[nl.Nonlinearity] = None, init_params : Optional[init.InitParams] = None, groups=1):
         super().__init__()
 
         # dropout
@@ -65,7 +65,7 @@ class Conv2DBlock(nn.Module):
 
         # conv
         kernel_size = kernel_rad * 2 + 1
-        model += [nn.Conv2d(in_dim, out_dim, kernel_size, stride, bias=bias, groups=1)]
+        model += [nn.Conv2d(in_dim, out_dim, kernel_size, stride, bias=bias, groups=groups)]
 
         # init
         if bias:

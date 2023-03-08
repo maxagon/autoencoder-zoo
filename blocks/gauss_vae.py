@@ -52,7 +52,7 @@ class GaussianDistribution(object):
 
     def sample(self):
         std = torch.exp(0.5 * self.logvar)
-        x = self.mean + std * torch.randn(self.mean.shape).to(device=self.parameters.device)
+        x = self.mean + std * torch.randn(self.mean.shape, device=self.parameters.device)
         return x
 
     def kl(self):

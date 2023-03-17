@@ -58,7 +58,7 @@ def channelwise_noise_like(tensor : torch.Tensor):
             if std == 0 or torch.isnan(std):
                 new_lat = torch.full_like(target_slice, mean)
             else:
-                new_lat = torch.normal(mean, std, target_slice.shape).to(tensor.device)
+                new_lat = torch.normal(mean, std, target_slice.shape, device=tensor.device)
                 new_lat = new_lat * (max_lat - min_lat) + min_lat
             b_latent.append(new_lat.unsqueeze(0).unsqueeze(0))
         merged = torch.cat(b_latent, dim=1)

@@ -89,6 +89,17 @@ class Conv2DBlock(nn.Module):
         out = self.model(out)
         return out
 
+class DepthwiseConv2DBlock(nn.Module):
+    def __init__(self, in_dim, out_dim, kernel_rad, pad_type='none'):
+        super().__init__()
+        self.blocks = nn.Sequential(
+            Conv2DBlock(in_dim=in_dim, out_dim=in_dim, kernel_rad=kernel_rad, pad_type=pad_type, groups=in_dim),
+            Conv2DBlock(in_dim=in_dim, out_dim=out_dim, kernel_rad=0)
+        )
+
+    def forward(self, x):
+        return self.blocks(x)
+
 class SelfAttentionCNN(nn.Module):
     def __init__(self, in_dim, attend_dim, heads, dropout):
         super().__init__()

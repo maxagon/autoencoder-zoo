@@ -21,7 +21,7 @@ class ChannelwiseMemoryMultiHead(nn.Module):
         self.head_out = out_channels // n_heads
         self.register_parameter("memory", nn.Parameter((torch.rand(size=[n_heads, head_dim, self.head_out]) * 2.0 - 1.0)))
         self.n_heads = n_heads
-        self.to_mem_key = ff.Conv2DBlock(in_dim=in_channels, out_dim=self.n_heads*head_dim, kernel_rad=0, bias=True)
+        self.to_mem_key = ff.Conv2DBlock(in_dim=in_channels, out_dim=self.n_heads*head_dim, kernel_size=1, bias=True)
     def forward(self, x):
         mem_key = self.to_mem_key(x)
         mem_key = rearrange(mem_key, "b (c m) h w -> b m c h w", m=self.n_heads)
@@ -51,7 +51,7 @@ class ConvMemoryMultiHead(nn.Module):
         self.kernel_size = kernel_size
         self.register_parameter("memory", nn.Parameter((torch.rand(size=[n_heads, head_dim * kernel_size * kernel_size, self.head_out]) * 2.0 - 1.0)))
         self.n_heads = n_heads
-        self.to_mem_key = ff.Conv2DBlock(in_dim=in_channels, out_dim=self.n_heads*head_dim, kernel_rad=0, bias=True)
+        self.to_mem_key = ff.Conv2DBlock(in_dim=in_channels, out_dim=self.n_heads*head_dim, kernel_size=1, bias=True)
         self.pad = nn.ZeroPad2d((self.kernel_size // 2, self.kernel_size % 2, self.kernel_size // 2, self.kernel_size % 2))
     def forward(self, x : torch.Tensor):
         b, c, h, w = x.shape
@@ -107,10 +107,10 @@ class KeyChannelwiseMemoryMultiHead(nn.Module):
         self.head_out = out_dim // n_heads
         self.register_parameter("key", nn.Parameter((torch.rand(size=[n_heads, key_dim, memory_dim]))))
         self.register_parameter("memory", nn.Parameter(torch.rand(size=[n_heads, memory_dim, head_dim]) * 0.5 - 0.25))
-        self.to_mem_key = ff.Conv2DBlock(in_dim=in_dim, out_dim=self.n_heads*key_dim, kernel_rad=0, bias=True)
+        self.to_mem_key = ff.Conv2DBlock(in_dim=in_dim, out_dim=self.n_heads*key_dim, kernel_size=1, bias=True)
         self.to_out = None
         if out_dim != head_dim * n_heads:
-            self.to_out = ff.Conv2DBlock(in_dim=head_dim * n_heads, out_dim=out_dim, kernel_rad=0, bias=True)
+            self.to_out = ff.Conv2DBlock(in_dim=head_dim * n_heads, out_dim=out_dim, kernel_size=1, bias=True)
 
     def forward(self, x):
         out = x
@@ -132,11 +132,11 @@ class KeyConvMemoryMultiHead(nn.Module):
         self.kernel_size = kernel_size
         self.register_parameter("key", nn.Parameter((torch.rand(size=[n_heads, key_dim * kernel_size * kernel_size, memory_dim]))))
         self.register_parameter("memory", nn.Parameter(torch.rand(size=[n_heads, memory_dim, head_dim]) * 2.0 - 1.0))
-        self.to_mem_key = ff.Conv2DBlock(in_dim=in_dim, out_dim=self.n_heads*key_dim, kernel_rad=0, bias=True)
+        self.to_mem_key = ff.Conv2DBlock(in_dim=in_dim, out_dim=self.n_heads*key_dim, kernel_size=1, bias=True)
         self.pad = nn.ZeroPad2d((self.kernel_size // 2, self.kernel_size % 2, self.kernel_size // 2, self.kernel_size % 2))
         self.to_out = None
         if out_dim != head_dim * n_heads:
-            self.to_out = ff.Conv2DBlock(in_dim=head_dim * n_heads, out_dim=out_dim, kernel_rad=0, bias=True)
+            self.to_out = ff.Conv2DBlock(in_dim=head_dim * n_heads, out_dim=out_dim, kernel_size=1, bias=True)
 
     def forward(self, x):
         b, c, h, w = x.shape

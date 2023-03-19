@@ -42,7 +42,7 @@ class Linear(nn.Module):
         return out
 
 class Conv2DBlock(nn.Module):
-    def __init__(self, in_dim, out_dim, kernel_rad, pad_type='none', bias=True, dropout=0.0, stride=1, 
+    def __init__(self, in_dim, out_dim, kernel_size, pad_type='none', bias=True, dropout=0.0, stride=1, 
         nonlinearity : Optional[nl.Nonlinearity] = None, init_params : Optional[init.InitParams] = None, groups=1):
         super().__init__()
 
@@ -53,19 +53,8 @@ class Conv2DBlock(nn.Module):
 
         model = []
 
-        # pad
-        if pad_type == 'replicate':
-            model += [nn.ReplicationPad2d(kernel_rad)]
-        elif pad_type == 'reflect':
-            model += [nn.ReflectionPad2d(kernel_rad)]
-        elif pad_type == 'zero':
-            model += [nn.ZeroPad2d(kernel_rad)]
-        elif pad_type != 'none':
-            assert 0, "Wrong padding type: {}".format(pad_type)
-
         # conv
-        kernel_size = kernel_rad * 2 + 1
-        model += [nn.Conv2d(in_dim, out_dim, kernel_size, stride, bias=bias, groups=groups)]
+        model += [nn.Conv2d(in_dim, out_dim, kernel_size, stride, bias=bias, groups=groups, padding='same', padding_mode=pad_type)]
 
         # init
         if bias:
@@ -90,11 +79,11 @@ class Conv2DBlock(nn.Module):
         return out
 
 class DepthwiseConv2DBlock(nn.Module):
-    def __init__(self, in_dim, out_dim, kernel_rad, pad_type='none'):
+    def __init__(self, in_dim, out_dim, kernel_size, pad_type='none'):
         super().__init__()
         self.blocks = nn.Sequential(
-            Conv2DBlock(in_dim=in_dim, out_dim=in_dim, kernel_rad=kernel_rad, pad_type=pad_type, groups=in_dim),
-            Conv2DBlock(in_dim=in_dim, out_dim=out_dim, kernel_rad=0)
+            Conv2DBlock(in_dim=in_dim, out_dim=in_dim, kernel_size=kernel_size, pad_type=pad_type, groups=in_dim),
+            Conv2DBlock(in_dim=in_dim, out_dim=out_dim, kernel_size=1)
         )
 
     def forward(self, x):
@@ -107,12 +96,12 @@ class SelfAttentionCNN(nn.Module):
         self.scale = math.sqrt(attend_dim)
 
         qkv_dim = attend_dim * heads
-        self.q = Conv2DBlock(in_dim=in_dim, out_dim=qkv_dim, kernel_rad=0, bias=False)
-        self.k = Conv2DBlock(in_dim=in_dim, out_dim=qkv_dim, kernel_rad=0, bias=False)
-        self.v = Conv2DBlock(in_dim=in_dim, out_dim=qkv_dim, kernel_rad=0, bias=False)
+        self.q = Conv2DBlock(in_dim=in_dim, out_dim=qkv_dim, kernel_size=1, bias=False)
+        self.k = Conv2DBlock(in_dim=in_dim, out_dim=qkv_dim, kernel_size=1, bias=False)
+        self.v = Conv2DBlock(in_dim=in_dim, out_dim=qkv_dim, kernel_size=1, bias=False)
 
         self.dropout = nn.Dropout(dropout)
-        self.to_out = Conv2DBlock(in_dim=qkv_dim, out_dim=in_dim, kernel_rad=0, bias=False)
+        self.to_out = Conv2DBlock(in_dim=qkv_dim, out_dim=in_dim, kernel_size=1, bias=False)
 
     def forward(self, x):
         b, c, h, w = x.shape

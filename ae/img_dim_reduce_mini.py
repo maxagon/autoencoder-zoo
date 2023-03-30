@@ -26,7 +26,7 @@ class SimpleResBlock(nn.Module):
         super().__init__()
         modules = []
         for i in range(n_layers):
-            modules.append(ff.Conv2DBlock(in_dim=dim, out_dim=dim, kernel_size=3, pad_type='zero', bias=True, nonlinearity=nl.ReLU()))
+            modules.append(ff.Conv2DBlock(in_dim=dim, out_dim=dim, kernel_rad=1, pad_type='zero', bias=True, nonlinearity=nl.ReLU()))
         self.model = nn.Sequential(*modules)
     def forward(self, x):
         out = x
@@ -49,7 +49,7 @@ class FactoryAE(UNet.UNetFactory):
         return SimpleResBlock(dim=dim, n_layers=n_layers)
 
     def make_dim_convert(self, in_dim, out_dim):
-        return ff.Conv2DBlock(in_dim=in_dim, out_dim=out_dim, kernel_size=1, bias=True)
+        return ff.Conv2DBlock(in_dim=in_dim, out_dim=out_dim, kernel_rad=0, bias=True)
 
 class FactoryUNet(UNet.UNetFactory):
     def __init__(self):
@@ -65,11 +65,11 @@ class FactoryUNet(UNet.UNetFactory):
         assert(heads == 0)
         modules = []
         for i in range(n_layers):
-            modules.append(ff.Conv2DBlock(in_dim=dim, out_dim=dim, kernel_size=3, pad_type='zero', bias=True, nonlinearity=nl.ReLU()))
+            modules.append(ff.Conv2DBlock(in_dim=dim, out_dim=dim, kernel_rad=1, pad_type='zero', bias=True, nonlinearity=nl.ReLU()))
         return nn.Sequential(*modules)
 
     def make_dim_convert(self, in_dim, out_dim):
-        return ff.Conv2DBlock(in_dim=in_dim, out_dim=out_dim, kernel_size=1, bias=False)
+        return ff.Conv2DBlock(in_dim=in_dim, out_dim=out_dim, kernel_rad=0, bias=False)
 
 class ImgDimReduceMini(ae.AEBase):
     def __init__(self, in_out_dim, ae_depth, ae_dim, ae_lat_dim, unet_depth, unet_dim):
@@ -77,13 +77,13 @@ class ImgDimReduceMini(ae.AEBase):
 
         r_ae_depth = list(reversed(ae_depth))
         r_ae_dim = list(reversed(ae_dim))
+
         unet_factory = FactoryUNet()
         ae_factory = FactoryAE()
-        heads = [0] * len(ae_dim)
 
         self.rec = UNet.UnetReconstruction(unet_factory, unet_depth, unet_dim)
-        self.down_blocks = ae_factory.unet_downscale_blocks(dims=ae_dim, depth=ae_depth, heads=heads)
-        self.up_blocks = ae_factory.unet_upscale_blocks(dims=r_ae_dim, depth=r_ae_depth, heads=heads)
+        self.down_blocks = ae_factory.unet_downscale_blocks(dims=ae_dim, depth=ae_depth)
+        self.up_blocks = ae_factory.unet_upscale_blocks(dims=r_ae_dim, depth=r_ae_depth)
         self.from_img = ae_factory.make_dim_convert(in_dim=in_out_dim, out_dim=ae_dim[0])
         self.to_lat = ae_factory.make_dim_convert(in_dim=ae_dim[-1], out_dim=ae_lat_dim)
         self.from_lat = ae_factory.make_dim_convert(in_dim=ae_lat_dim, out_dim=r_ae_dim[0])

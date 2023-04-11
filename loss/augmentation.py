@@ -3,17 +3,21 @@ import random
 import torch
 from einops import rearrange
 
-def rand_spatial_seed(batch_size = 1):
+
+def rand_spatial_seed(batch_size=1):
     result = []
     for i in range(batch_size):
-        result.append({
-            "flipX" : random.random() < 0.37,
-            "flipY" : random.random() < 0.37,
-            "reverseXY" : random.random() < 0.37
-        })
+        result.append(
+            {
+                "flipX": random.random() < 0.37,
+                "flipY": random.random() < 0.37,
+                "reverseXY": random.random() < 0.37,
+            }
+        )
     return result
 
-def rand_spatial_apply(tensor : torch.Tensor, seed = None):
+
+def rand_spatial_apply(tensor: torch.Tensor, seed=None):
     b, _, _, _ = tensor.shape
     if seed == None:
         seed = rand_spatial_seed(batch_size=b)
@@ -29,12 +33,13 @@ def rand_spatial_apply(tensor : torch.Tensor, seed = None):
         result.append(out_t)
     return torch.cat(result, dim=0)
 
+
 def zero_rand_element(arr):
     indexes = []
     for i in range(len(arr)):
         if arr[i] != None:
             indexes.append(i)
-    assert(len(indexes) >= 1)
+    assert len(indexes) >= 1
     b, _, _, _ = arr[indexes[0]].shape
     for i in range(b):
         rand = random.randint(0, len(indexes))
@@ -42,8 +47,9 @@ def zero_rand_element(arr):
             arr[indexes[rand]][i] = arr[indexes[rand]][i] * 0.0
     return arr
 
+
 @torch.no_grad()
-def channelwise_noise_like(tensor : torch.Tensor):
+def channelwise_noise_like(tensor: torch.Tensor):
     b, s, _, _ = tensor.shape
     result_rand = []
     for i in range(b):
@@ -58,7 +64,9 @@ def channelwise_noise_like(tensor : torch.Tensor):
             if std == 0 or torch.isnan(std):
                 new_lat = torch.full_like(target_slice, mean)
             else:
-                new_lat = torch.normal(mean, std, target_slice.shape, device=tensor.device)
+                new_lat = torch.normal(
+                    mean, std, target_slice.shape, device=tensor.device
+                )
                 new_lat = new_lat * (max_lat - min_lat) + min_lat
             b_latent.append(new_lat.unsqueeze(0).unsqueeze(0))
         merged = torch.cat(b_latent, dim=1)

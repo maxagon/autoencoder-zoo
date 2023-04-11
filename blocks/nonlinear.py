@@ -2,6 +2,7 @@ from abc import abstractmethod
 
 import torch.nn as nn
 
+
 class Nonlinearity(nn.Module):
     def __init__(self):
         super().__init__()
@@ -13,6 +14,7 @@ class Nonlinearity(nn.Module):
     def calc_gain(self):
         pass
 
+
 class ReLU(Nonlinearity):
     def __init__(self):
         super().__init__()
@@ -22,6 +24,7 @@ class ReLU(Nonlinearity):
 
     def calc_gain(self):
         return nn.init.calculate_gain("relu")
+
 
 class SiLU(Nonlinearity):
     def __init__(self):

@@ -4,10 +4,11 @@ import torchvision.transforms as transforms
 
 import numpy as np
 
+
 class VitDino(nn.Module):
     def __init__(self):
         super().__init__()
-        self.vit_model = torch.hub.load('facebookresearch/dino:main', 'dino_vits8')
+        self.vit_model = torch.hub.load("facebookresearch/dino:main", "dino_vits8")
         self.loss = nn.MSELoss()
         # original repo https://github.com/facebookresearch/dino
         # uses .ToTensor() and .Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225) transform

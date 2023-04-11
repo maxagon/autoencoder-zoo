@@ -3,25 +3,24 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 import numpy as np
 
+
 # https://github.com/LAION-AI/aesthetic-predictor
 class AesteticScoreLoss(nn.Module):
     def __init__(self):
         super().__init__()
         self.layers = nn.Sequential(
             nn.Linear(768, 1024),
-            #nn.ReLU(),
+            # nn.ReLU(),
             nn.Dropout(0.2),
             nn.Linear(1024, 128),
-            #nn.ReLU(),
+            # nn.ReLU(),
             nn.Dropout(0.2),
             nn.Linear(128, 64),
-            #nn.ReLU(),
+            # nn.ReLU(),
             nn.Dropout(0.1),
-
             nn.Linear(64, 16),
-            #nn.ReLU(),
-
-            nn.Linear(16, 1)
+            # nn.ReLU(),
+            nn.Linear(16, 1),
         )
         self.load_state_dict(torch.load("pretrained/ava+logos-l14-linearMSE.pth"))
         self.clip_model, _ = torch.hub.load("openai/CLIP", "ViT_L_14")

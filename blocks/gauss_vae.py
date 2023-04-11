@@ -3,8 +3,11 @@ import math
 import torch
 import torch.nn as nn
 
-class GaussianDropoutScheduler():
-    def __init__(self, start_dropout = 0.2, end_dropount = 0.0, warmup_steps = 20000, exp_decay = 10000):
+
+class GaussianDropoutScheduler:
+    def __init__(
+        self, start_dropout=0.2, end_dropount=0.0, warmup_steps=20000, exp_decay=10000
+    ):
         self.blocks = []
         self.counter = 0
         self.start_dropout = start_dropout
@@ -21,12 +24,15 @@ class GaussianDropoutScheduler():
         self.counter = self.counter + 1
         if self.counter > self.warmup_steps:
             step = self.counter - self.warmup_steps
-            current_dropout = self.end_dropout + (self.start_dropout - self.end_dropout) * math.exp(-step / self.exp_decay)
+            current_dropout = self.end_dropout + (
+                self.start_dropout - self.end_dropout
+            ) * math.exp(-step / self.exp_decay)
             self.update(current_dropout)
 
     def update(self, dropout):
         for b in self.blocks:
             b.set_dropout(dropout)
+
 
 # Gaussian dropout as an information bottleneck layer
 # http://bayesiandeeplearning.org/2021/papers/40.pdf
@@ -44,6 +50,7 @@ class GaussianDropout(nn.Module):
         out = out * noise
         return out
 
+
 class GaussianDistribution(object):
     def __init__(self, parameters):
         self.parameters = parameters
@@ -52,7 +59,9 @@ class GaussianDistribution(object):
 
     def sample(self):
         std = torch.exp(0.5 * self.logvar)
-        x = self.mean + std * torch.randn(self.mean.shape, device=self.parameters.device)
+        x = self.mean + std * torch.randn(
+            self.mean.shape, device=self.parameters.device
+        )
         return x
 
     def kl(self):
@@ -61,5 +70,7 @@ class GaussianDistribution(object):
         for i in range(1, shape_dim):
             sum_dim.append(i)
         var = torch.exp(self.logvar)
-        result = torch.sum(torch.pow(self.mean, 2)  + var - 1.0 - self.logvar, dim=sum_dim)
+        result = torch.sum(
+            torch.pow(self.mean, 2) + var - 1.0 - self.logvar, dim=sum_dim
+        )
         return result.mean(dim=0)

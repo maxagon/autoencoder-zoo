@@ -4,24 +4,34 @@ import math
 import torch
 import torch.nn as nn
 
+
 class InitMode(Enum):
-    FanIn = 1,
-    FanOut = 2,
+    FanIn = (1,)
+    FanOut = (2,)
     FanAvr = 3
 
+
 class InitDisribution(Enum):
-    Normal = 1,
+    Normal = (1,)
     Uniform = 2
 
-class InitParams():
-    def __init__(self, mode : InitMode = InitMode.FanAvr, distribution : InitDisribution  = InitDisribution.Normal, gain = 1.0, scale = 1.0):
+
+class InitParams:
+    def __init__(
+        self,
+        mode: InitMode = InitMode.FanAvr,
+        distribution: InitDisribution = InitDisribution.Normal,
+        gain=1.0,
+        scale=1.0,
+    ):
         self.mode = mode
         self.distribution = distribution
         self.gain = gain
         self.scale = scale
 
+
 @torch.no_grad()
-def variance_scaling_init(tensor : torch.Tensor, init_params : InitParams):
+def variance_scaling_init(tensor: torch.Tensor, init_params: InitParams):
     fan_in, fan_out = nn.init._calculate_fan_in_and_fan_out(tensor)
     scale = init_params.scale
 

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 import numpy as np
+import training
 
 
 # https://github.com/LAION-AI/aesthetic-predictor
@@ -22,7 +23,9 @@ class AesteticScoreLoss(nn.Module):
             # nn.ReLU(),
             nn.Linear(16, 1),
         )
-        self.load_state_dict(torch.load("pretrained/ava+logos-l14-linearMSE.pth"))
+        self.load_state_dict(
+            torch.load(training.get_checkpoint_path("ava+logos-l14-linearMSE.pth"))
+        )
         self.clip_model, _ = torch.hub.load("openai/CLIP", "ViT_L_14")
         mean_expected = np.array([0.48145466, 0.4578275, 0.40821073])
         std_expected = np.array([0.26862954, 0.26130258, 0.27577711])

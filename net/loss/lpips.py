@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from torchvision import models
 from collections import namedtuple
+import training
 
 
 class LPIPS(nn.Module):
@@ -23,7 +24,7 @@ class LPIPS(nn.Module):
             param.requires_grad = False
 
     def load_from_pretrained(self, name="vgg_lpips"):
-        ckpt = "pretrained/vgg.pth"
+        ckpt = training.get_checkpoint_path("vgg.pth")
         self.load_state_dict(
             torch.load(ckpt, map_location=torch.device("cpu")), strict=False
         )
@@ -34,7 +35,7 @@ class LPIPS(nn.Module):
         if name != "vgg_lpips":
             raise NotImplementedError
         model = cls()
-        ckpt = "pretrained/vgg.pth"
+        ckpt = training.get_checkpoint_path("vgg.pth")
         model.load_state_dict(
             torch.load(ckpt, map_location=torch.device("cpu")), strict=False
         )

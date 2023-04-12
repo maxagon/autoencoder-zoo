@@ -71,7 +71,6 @@ class UNetFactory:
     # [ResBlock(dim*2), DimConvert(dim*2->dim), ResBlock(dim)]
     def unet_cat_block(self, dim, depth, heads):
         modules = []
-        # modules.append(self.make_feedforward(dim=dim*2, n_layers=depth, heads=heads))
         modules.append(self.make_dim_convert(in_dim=dim * 2, out_dim=dim))
         modules.append(self.make_feedforward(dim=dim, n_layers=depth, heads=heads))
         return nn.Sequential(*modules)

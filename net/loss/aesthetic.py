@@ -24,7 +24,7 @@ class AesteticScoreLoss(nn.Module):
             nn.Linear(16, 1),
         )
         self.load_state_dict(
-            torch.load(training.get_checkpoint_path("ava+logos-l14-linearMSE.pth"))
+            torch.load(training.get_pretrained_path("ava+logos-l14-linearMSE.pth"))
         )
         self.clip_model, _ = torch.hub.load("openai/CLIP", "ViT_L_14")
         mean_expected = np.array([0.48145466, 0.4578275, 0.40821073])

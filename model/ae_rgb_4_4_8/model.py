@@ -71,7 +71,7 @@ class FactoryUNet(net.UNetFactory):
                     kernel_rad=1,
                     pad_type="zero",
                     bias=True,
-                    nonlinearity=nl.ReLU(),
+                    nonlinearity=net.ReLU(),
                 )
             )
         return nn.Sequential(*modules)
@@ -207,6 +207,18 @@ class ImgDimReduceMini(model.AEBase):
         self.to_img = ae_factory.make_dim_convert(
             in_dim=r_ae_dim[-1], out_dim=in_out_dim
         )
+
+    @classmethod
+    def model_rgb_4_4_8(cls):
+        model_rgb_4_4_8 = ImgDimReduceMini(
+            in_out_dim=3,
+            ae_lat_dim=8,
+            ae_depth=[1, 2, 4],
+            ae_dim=[16, 32, 48],
+            unet_depth=[1, 2, 4],
+            unet_dim=[16, 32, 48],
+        )
+        return model_rgb_4_4_8
 
     def encode_features(self, input):
         out = input

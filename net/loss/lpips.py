@@ -24,7 +24,7 @@ class LPIPS(nn.Module):
             param.requires_grad = False
 
     def load_from_pretrained(self, name="vgg_lpips"):
-        ckpt = training.get_checkpoint_path("vgg.pth")
+        ckpt = training.get_pretrained_path("vgg.pth")
         self.load_state_dict(
             torch.load(ckpt, map_location=torch.device("cpu")), strict=False
         )
@@ -35,7 +35,7 @@ class LPIPS(nn.Module):
         if name != "vgg_lpips":
             raise NotImplementedError
         model = cls()
-        ckpt = training.get_checkpoint_path("vgg.pth")
+        ckpt = training.get_pretrained_path("vgg.pth")
         model.load_state_dict(
             torch.load(ckpt, map_location=torch.device("cpu")), strict=False
         )
@@ -59,7 +59,7 @@ class LPIPS(nn.Module):
         val = res[0]
         for l in range(1, len(self.chns)):
             val += res[l]
-        return torch.sum(val) / val.shape[0]
+        return val
 
 
 class ScalingLayer(nn.Module):

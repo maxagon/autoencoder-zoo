@@ -13,7 +13,7 @@ class SSIM(nn.Module):
         assert input.device == grountruth.device
         with torch.no_grad():
             return tm.functional.structural_similarity_index_measure(
-                input, grountruth.to(input.dtype), data_range=2.0
+                input, grountruth.to(input.dtype), data_range=2.0, reduction="none"
             )
 
 
@@ -25,7 +25,7 @@ class PSNR(nn.Module):
         assert input.device == grountruth.device
         with torch.no_grad():
             return tm.functional.peak_signal_noise_ratio(
-                input, grountruth.to(input.dtype), data_range=2.0
+                input, grountruth.to(input.dtype), data_range=2.0, reduction="none"
             )
 
 

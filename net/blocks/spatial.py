@@ -2,8 +2,9 @@ from enum import Enum
 
 import torch.nn as nn
 
-from blocks.filters import LanczosSampler2D
-import blocks.init as init
+from . import init
+from . import nonlinear as nl
+from . import filters
 
 
 class InterpolationMode(Enum):
@@ -77,7 +78,7 @@ class LanczosUpscale(nn.Module):
     def __init__(self, in_dim, out_dim):
         super().__init__()
         model = []
-        model.append(LanczosSampler2D())
+        model.append(filters.LanczosSampler2D())
         if in_dim != out_dim:
             model.append(
                 nn.Conv2d(

@@ -5,8 +5,8 @@ import torch
 import torch.nn as nn
 from einops import rearrange
 
-import blocks.init as init
-import blocks.nonlinear as nl
+from . import init
+from . import nonlinear as nl
 
 
 class Linear(nn.Module):

@@ -6,7 +6,7 @@ import re
 def get_checkpoint_path(checkpoint_dir: str):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     p = pathlib.Path(dir_path)
-    new_parts = p.parts[0:-2] + ("weights",) + (checkpoint_dir,)
+    new_parts = p.parts[0:-1] + ("weights",) + (checkpoint_dir,)
     final_path = pathlib.Path(*new_parts)
 
     if not os.path.isdir(final_path):
@@ -20,7 +20,7 @@ checkpoint_postfix = "_"
 
 def get_checkpoint_file(checkpoint_folder_name: str, data_name: str, index: int):
     dir = get_checkpoint_path(checkpoint_folder_name)
-    return dir + "\\" + data_name + checkpoint_postfix + str(index)
+    return dir + "\\" + data_name + checkpoint_postfix + str(index) + ".bin"
 
 
 def get_last_checkpoint_index(checkpoint_folder, data_names: list):
@@ -42,11 +42,11 @@ def get_last_checkpoint_index(checkpoint_folder, data_names: list):
     if not all(x == max_indexes[0] for x in max_indexes):
         assert False, "Corrupted checkpoint at: {0}".format(dir)
 
-    return max_indexes[0] if max_indexes[0] != -1 else None
+    return max_indexes[0] if max_indexes[0] != -1 else 0
 
 
 def get_pretrained_path(checkpoint_name: str):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     p = pathlib.Path(dir_path)
-    new_parts = p.parts[0:-2] + ("pretrained",) + (checkpoint_name,)
+    new_parts = p.parts[0:-1] + ("pretrained",) + (checkpoint_name,)
     return str(pathlib.Path(*new_parts))

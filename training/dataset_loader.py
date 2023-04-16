@@ -55,7 +55,7 @@ class SingleDataset(data.Dataset):
     def __init__(self, path, img_size=256, resize_size=400):
         super(SingleDataset, self).__init__()
 
-        self.dir_A = os.path.join(path, "trainA")
+        self.dir_A = path
         self.resize_size = resize_size
         self.A_paths = make_dataset(self.dir_A)
         self.A_size = len(self.A_paths)
@@ -89,7 +89,7 @@ class SingleDataset(data.Dataset):
     def __getitem__(self, index):
         A_path = self.A_paths[index % self.A_size]
         A = self.apply_trans(load_any_image(A_path, True))
-        return {"A0": A, "A_paths": A_path}
+        return A
 
     def __len__(self):
         return self.A_size * 1000

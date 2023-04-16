@@ -5,7 +5,6 @@ import torch.nn as nn
 
 import net
 import model
-import torch_dct as dct
 
 
 class SimpleResBlock(nn.Module):

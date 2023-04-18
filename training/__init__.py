@@ -6,3 +6,4 @@ from .path_utils import (
 )
 
 from .dataset_loader import SingleDataset
+from .visdom_visualizer import Visualizer

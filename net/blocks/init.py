@@ -46,10 +46,10 @@ def variance_scaling_init(tensor: torch.Tensor, init_params: InitParams):
 
     if init_params.distribution == InitDisribution.Normal:
         std = math.sqrt(scale)
-        return init_params.gain * tensor.normal_(0, std)
+        tensor.normal_(0, std).mul_(init_params.gain)
     elif init_params.distribution == InitDisribution.Uniform:
         bound = math.sqrt(3 * scale)
-        return init_params.gain * tensor.uniform_(-bound, bound)
+        tensor.uniform_(-bound, bound).mul_(init_params.gain)
     else:
         assert 0, "Unknown ditribution: {}".format(init_params.distribution)
     return torch.zeros_like(tensor)

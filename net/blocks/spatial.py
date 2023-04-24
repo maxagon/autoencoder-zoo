@@ -5,11 +5,12 @@ import torch.nn as nn
 from . import init
 from . import nonlinear as nl
 from . import filters
+from . import feedforward
 
 
 class InterpolationMode(Enum):
-    Nearest = ("nearest",)
-    Linear = ("linear",)
+    Nearest = "nearest"
+    Linear = "linear"
     Bilinear = "bilinear"
 
 
@@ -72,6 +73,21 @@ class ConvolutionUpscale(nn.Module):
 
     def forward(self, x):
         return self.model(x)
+
+
+class PixelShuffleUpscale(nn.Module):
+    def __init__(self, in_dim, out_dim) -> None:
+        super().__init__()
+        assert in_dim % 4 == 0
+        self.to_out = feedforward.Conv2DBlock(
+            in_dim=in_dim // 4, out_dim=out_dim, kernel_rad=0
+        )
+
+    def forward(self, x):
+        out = x
+        out = nn.functional.pixel_shuffle(out, 2)
+        out = self.to_out(out)
+        return out
 
 
 class LanczosUpscale(nn.Module):

@@ -37,7 +37,7 @@ def make_dataset(dir):
             if is_image_file(fname):
                 path = os.path.join(root, fname)
                 images.append(path)
-    print("img", len(images))
+    print("Loading dataset. Dir: {0} Num Images: {1}".format(dir, len(images)))
     return images
 
 

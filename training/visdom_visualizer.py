@@ -44,13 +44,6 @@ class Visualizer:
 
     def display_dict(self, visuals, ncols, name):
         ncols = min(ncols, len(visuals))
-        table_css = """<style>
-                table {border-collapse: separate; border-spacing: 4px; white-space: nowrap; text-align: center}
-                table td {width: % dpx; height: % dpx; padding: 4px; outline: 4px solid black}
-                </style>""" % (
-            self.img_size,
-            self.img_size,
-        )
         title = name
         label_html = ""
         label_html_row = ""
@@ -76,12 +69,6 @@ class Visualizer:
                 padding=2,
                 opts=dict(title=title + " images"),
             )
-            label_html = "<table>%s</table>" % label_html
-            self.vis.text(
-                table_css + label_html,
-                win=tab_id + 1,
-                opts=dict(title=title + " labels"),
-            )
         except VisdomExceptionBase:
             self.create_visdom_connections()
 
@@ -98,7 +85,7 @@ class Visualizer:
                 X=np.stack([np.array(plot_data["X"])] * len(plot_data["legend"]), 1),
                 Y=np.array(plot_data["Y"]),
                 opts={
-                    "title": self.name + " losses over time",
+                    "title": name,
                     "legend": plot_data["legend"],
                     "xlabel": "iter",
                     "ylabel": "loss",

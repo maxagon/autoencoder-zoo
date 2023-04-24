@@ -23,5 +23,9 @@ class PSNR(nn.Module):
         assert input.device == grountruth.device
         with torch.no_grad():
             return tm.functional.peak_signal_noise_ratio(
-                input, grountruth.to(input.dtype), data_range=2.0, reduction="none"
+                input,
+                grountruth.to(input.dtype),
+                data_range=2.0,
+                reduction="none",
+                dim=(1, 2, 3),
             )

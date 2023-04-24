@@ -17,15 +17,31 @@ from .blocks.spatial import (
     ConvolutionDownscale,
     ConvolutionUpscale,
     LanczosUpscale,
+    PixelShuffleUpscale,
 )
 
-from .augmentation import rand_spatial_apply, rand_spatial_seed
+from .augmentation import (
+    rand_spatial_apply,
+    rand_spatial_seed,
+    rand_distortion_map,
+    rand_distortion_apply,
+    upscale_distortion_map,
+    channelwise_noise_like,
+    warp,
+)
+
+from .blocks.memory import (
+    KeyChannelwiseMemoryMultiHead,
+    ChannelwiseMemory,
+    ChannelwiseMemoryMultiHead,
+)
 
 from .metrics import PSNR, SSIM
 
 from .loss.aesthetic import AesteticScoreLoss
 from .loss.ternary import Ternary
 from .loss.lpips import LPIPS
+from .loss.vit_dino2 import VitDinoV2
 
 from .blocks.unet import UNetFactory, UnetReconstruction
 

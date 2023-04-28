@@ -47,6 +47,7 @@ def model_rgb_4_4_8_trainer(device, checkpoint_dir, dataset_dir):
         lr_max=0.0005,
     )
     return training.AeTrainer(
+        model_create_fn=model_rgb_4_4_8,
         checkpoint_folder_name=checkpoint_dir,
         device=device,
         dataset_dir=dataset_dir,

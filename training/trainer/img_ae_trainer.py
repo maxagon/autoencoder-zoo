@@ -265,6 +265,7 @@ def cycle(iterable):
 class AeTrainer:
     def __init__(
         self,
+        model_create_fn,
         checkpoint_folder_name: str,
         device,
         dataset_dir: str,
@@ -272,7 +273,7 @@ class AeTrainer:
         lr_schedule_params: LrScheduleParams,
     ) -> None:
         self.iter_arr, self.element_arr = reformat_schedule(schedule)
-
+        self.model_create_fn = model_create_fn
         self.end_iter = 300000
         self.validate_each_iter = 10000
         self.safe_each = 5000
@@ -299,10 +300,12 @@ class AeTrainer:
             self.trainer_session = None
 
         self.trainer_session = TrainingSession(
+            model=self.model_create_fn(),
             device=self.device,
             schedule_element=self.schedule_element,
             iteration=self.iter,
             optimizer=self.schedule_element.optimizer,
+            lr_schedule_params=self.lr_schedule_params,
         )
 
         if self.iter != 0:

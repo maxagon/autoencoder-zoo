@@ -202,10 +202,10 @@ class TrainingSession:
         }
 
         latent = self.upscale(self.upscale(latent))
-        for i in range(8):
+        for i in range(latent.shape[1]):
             img_dict["latent_space" + str(i)] = latent[:, i : i + 1, :, :]
         latent_distort = self.upscale(self.upscale(latent_distort))
-        for i in range(8):
+        for i in range(latent.shape[1]):
             img_dict["latent_space_distort" + str(i)] = latent_distort[
                 :, i : i + 1, :, :
             ]

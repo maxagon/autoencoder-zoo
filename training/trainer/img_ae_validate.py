@@ -58,6 +58,7 @@ class Validate:
             if resize
             else transforms.Compose(
                 [
+                    transforms.CenterCrop(resolution),
                     transforms.ToTensor(),
                     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
                 ]

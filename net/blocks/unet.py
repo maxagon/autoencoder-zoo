@@ -77,7 +77,15 @@ class UNetFactory:
 
 
 class UnetReconstruction(nn.Module):
-    def __init__(self, factory: UNetFactory, depth, dim, heads=None, heads_cat=None):
+    def __init__(
+        self,
+        factory: UNetFactory,
+        depth,
+        dim,
+        heads=None,
+        heads_cat=None,
+        residual: bool = False,
+    ):
         super().__init__()
 
         self.depth = len(depth)
@@ -98,13 +106,17 @@ class UnetReconstruction(nn.Module):
             dims=r_dim, depth=r_depth, heads=r_heads
         )
 
-        cat_blocks = []
-        for i in range(self.depth):
-            cat_blocks.append(
-                factory.unet_cat_block(dim=dim[i], depth=depth[i], heads=heads_cat[i])
-            )
-        cat_blocks.reverse()
-        self.cat_blocks = nn.ModuleList(cat_blocks)
+        self.residual = residual
+        if not self.residual:
+            cat_blocks = []
+            for i in range(self.depth):
+                cat_blocks.append(
+                    factory.unet_cat_block(
+                        dim=dim[i], depth=depth[i], heads=heads_cat[i]
+                    )
+                )
+            cat_blocks.reverse()
+            self.cat_blocks = nn.ModuleList(cat_blocks)
 
     def forward(self, x):
         out = x
@@ -118,7 +130,10 @@ class UnetReconstruction(nn.Module):
         for i in range(1, self.depth):
             out = self.up_blocks[i](out)
             cur_down_out = down_outs.pop()
-            out = torch.cat([out, cur_down_out], dim=1)
-            out = self.cat_blocks[i](out)
+            if self.residual:
+                out = out + cur_down_out
+            else:
+                out = torch.cat([out, cur_down_out], dim=1)
+                out = self.cat_blocks[i](out)
 
         return out

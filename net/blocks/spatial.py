@@ -1,6 +1,9 @@
 from enum import Enum
 
+import torch
 import torch.nn as nn
+
+from einops import repeat
 
 from . import init
 from . import nonlinear as nl
@@ -75,18 +78,47 @@ class ConvolutionUpscale(nn.Module):
         return self.model(x)
 
 
+# https://github.com/lucidrains/lightweight-gan
+# https://arxiv.org/abs/2208.03641 shows this is the most optimal way to downsample
+# named SP-conv in the paper, but basically a pixel unshuffle
+class PixelShuffleDownsample(nn.Module):
+    def __init__(self, in_dim, out_dim) -> None:
+        super().__init__()
+        self.to_out = feedforward.Conv2DBlock(
+            in_dim=in_dim * 4, out_dim=out_dim, kernel_rad=0
+        )
+
+    def forward(self, x):
+        out = x
+        out = nn.functional.pixel_unshuffle(out, 2)
+        out = self.to_out(out)
+        return out
+
+
+# https://github.com/lucidrains/lightweight-gan
 class PixelShuffleUpscale(nn.Module):
     def __init__(self, in_dim, out_dim) -> None:
         super().__init__()
         assert in_dim % 4 == 0
         self.to_out = feedforward.Conv2DBlock(
-            in_dim=in_dim // 4, out_dim=out_dim, kernel_rad=0
+            in_dim=in_dim, out_dim=out_dim * 4, kernel_rad=0
         )
+        self.init_conv_(self.to_out)
+
+    def init_conv_(self, conv):
+        o, i, h, w = conv.weight.shape
+        conv_weight = torch.empty(o // 4, i, h, w)
+        nn.init.kaiming_uniform_(conv_weight)
+        conv_weight = repeat(conv_weight, "o ... -> (o 4) ...")
+
+        conv.weight.data.copy_(conv_weight)
+        nn.init.zeros_(conv.bias.data)
 
     def forward(self, x):
         out = x
-        out = nn.functional.pixel_shuffle(out, 2)
         out = self.to_out(out)
+        out = nn.functional.silu(out)
+        out = nn.functional.pixel_shuffle(out, 2)
         return out
 
 

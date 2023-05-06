@@ -20,6 +20,8 @@ from .blocks.spatial import (
     PixelShuffleUpscale,
 )
 
+from .blocks.filters import LinearFilter2D, AliasingNonlinearityFilter5
+
 from .augmentation import (
     rand_spatial_apply,
     rand_spatial_seed,
@@ -34,6 +36,7 @@ from .blocks.memory import (
     KeyChannelwiseMemoryMultiHead,
     ChannelwiseMemory,
     ChannelwiseMemoryMultiHead,
+    LongMemory,
 )
 
 from .metrics import PSNR, SSIM
@@ -46,3 +49,5 @@ from .loss.vit_dino2 import VitDinoV2
 from .blocks.unet import UNetFactory, UnetReconstruction
 
 from .blocks.nonlinear import *
+
+from .blocks.norm import ModLayerNorm, BigBatchNorm

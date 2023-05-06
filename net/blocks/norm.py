@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-import blocks.feedforward as ff
-import blocks.nonlinear as nl
-import blocks.init as init
+from .feedforward import Linear
+from .init import InitParams
+from .nonlinear import ReLU
 
 from einops import rearrange
 
@@ -34,12 +34,8 @@ class ModLayerNorm(nn.Module):
         if amplitude_mod == None:
             out_dim = num_features * 2 if affine_mod else num_features
             amplitude_mod = nn.Sequential(
-                ff.Linear(
-                    num_features, num_features * 2, bias=True, nonlinearity=nl.ReLU()
-                ),
-                ff.Linear(
-                    num_features * 2, out_dim, init_params=init.InitParams(scale=0.1)
-                ),
+                Linear(num_features, num_features * 2, bias=True, nonlinearity=ReLU()),
+                Linear(num_features * 2, out_dim, init_params=InitParams(scale=0.1)),
             )
         self.weight = nn.Parameter(torch.ones(1, num_features, 1))
         self.bias = nn.Parameter(torch.zeros(1, num_features, 1))

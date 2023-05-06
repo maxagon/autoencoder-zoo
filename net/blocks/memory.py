@@ -6,6 +6,20 @@ import net
 from einops import rearrange
 
 
+class LongMemory(nn.Module):
+    def __init__(self, dim, codebook_len) -> None:
+        super().__init__()
+        self.register_parameter(
+            "memory", nn.Parameter(torch.rand(size=[codebook_len, dim]))
+        )
+
+    def forward(self, x):
+        similarity = torch.einsum("kc,bchw->bkhw", self.memory, x)  # b codebook_len h w
+        similarity = nn.functional.softmax(similarity, dim=1)
+        result = torch.einsum("kc,bkhw->bchw", self.memory, similarity)
+        return result
+
+
 class ChannelwiseMemory(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()

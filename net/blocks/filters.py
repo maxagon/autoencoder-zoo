@@ -43,6 +43,22 @@ def create_lanczos_upscale_weights():
     return w
 
 
+def conv_filter_1d(filter, normalize=True):
+    size = len(filter)
+    kernel = torch.zeros(size=[1, 1, size, size])
+    sum = 0.0
+    for x in range(size):
+        for y in range(size):
+            weight = filter[x] * filter[y]
+            kernel[0][0][x][y] = weight
+            sum += weight
+    if normalize:
+        for x in range(size):
+            for y in range(size):
+                kernel[0][0][x][y] = kernel[0][0][x][y] / sum
+    return kernel
+
+
 # https://en.wikipedia.org/wiki/Lanczos_resampling
 # we can interpret each input channel as separate "batch" element so we can run single filter for each channel
 # at least don't have to deal with cuda kernel
@@ -64,31 +80,60 @@ class LanczosSampler2D(nn.Module):
 
 
 class LinearFilter2D(nn.Module):
-    def __init__(self, filter, normalize=True):
+    def __init__(self, filter, dim, normalize=True):
         super().__init__()
-        self.size = len(filter)
-        kernel = torch.zeros(size=[1, 1, self.size, self.size])
-        sum = 0.0
-        for x in range(self.size):
-            for y in range(self.size):
-                weight = filter[x] * filter[y]
-                kernel[0][0][x][y] = weight
-                sum += weight
-        if normalize:
-            assert sum != 0
-            for x in range(self.size):
-                for y in range(self.size):
-                    kernel[0][0][x][y] = kernel[0][0][x][y] / sum
+        kernel = conv_filter_1d(filter, normalize)
+        kernel = kernel.tile((dim, 1, 1, 1))
         self.register_buffer("kernel", kernel)
-        self.pad = nn.ReflectionPad2d(self.size // 2)
+        self.pad = nn.ReflectionPad2d(len(filter) // 2)
+        self.dim = dim
 
     def forward(self, x):
         out = x
-        bs = out.shape[0]
         out = self.pad(out)
-        out = rearrange(out, "b c x y -> (b c) x y")
-        out = torch.unsqueeze(out, dim=1)
-        out = torch.nn.functional.conv2d(out, self.kernel)
-        out = torch.squeeze(out, dim=1)
-        out = rearrange(out, "(b c) x y -> b c x y", b=bs)
+        out = torch.nn.functional.conv2d(out, self.kernel, groups=self.dim)
+        return out
+
+
+def simulate_upscale(h_pos, w_pos, filter_size):
+    tensor = torch.zeros(size=(1, 1, filter_size + 1, filter_size + 1))
+    h_pos_start = h_pos * 2
+    w_pos_start = w_pos * 2
+    for h in range(2):
+        for w in range(2):
+            pos_h = h_pos_start + h
+            pos_w = w_pos_start + w
+            if pos_h < 0 or pos_h >= tensor.shape[2]:
+                continue
+            if pos_w < 0 or pos_w >= tensor.shape[3]:
+                continue
+            tensor[0, 0, pos_h, pos_w] = 1.0
+    return tensor
+
+
+def calculate_response(grid, filter):
+    return torch.mean(torch.nn.functional.conv2d(grid, filter))
+
+
+class AliasingNonlinearityFilter5(nn.Module):
+    def __init__(self, dim, base_filter, normalize=True):
+        super().__init__()
+        assert len(base_filter) == 5
+        base_filter_2d = conv_filter_1d(base_filter, normalize)
+        filter_range_pixels = 3
+        kernel = torch.zeros(size=(1, 1, filter_range_pixels, filter_range_pixels))
+        for h in range(filter_range_pixels):
+            for w in range(filter_range_pixels):
+                kernel[0, 0, h, w] = calculate_response(
+                    simulate_upscale(h, w, 5), base_filter_2d
+                )
+        kernel = kernel.tile((dim, 1, 1, 1))
+        self.register_buffer("kernel", kernel)
+        self.pad = nn.ReflectionPad2d(filter_range_pixels // 2)
+        self.dim = dim
+
+    def forward(self, x):
+        out = x
+        out = self.pad(out)
+        out = torch.nn.functional.conv2d(out, self.kernel, groups=self.dim)
         return out
